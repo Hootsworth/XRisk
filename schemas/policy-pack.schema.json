@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xrisk-engine.dev/schemas/policy-pack.schema.json",
+  "title": "XRisk Policy Pack",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "globalPolicies": { "$ref": "#/$defs/rulesArray" },
+    "projectPolicies": { "$ref": "#/$defs/rulesArray" },
+    "userPolicies": { "$ref": "#/$defs/rulesArray" }
+  },
+  "$defs": {
+    "rulesArray": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/rule" }
+    },
+    "rule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["effect"],
+      "properties": {
+        "id": { "type": "string" },
+        "tool": { "type": "string", "description": "Supports wildcard '*'" },
+        "actor": { "type": "string", "description": "Supports wildcard '*'" },
+        "scope": { "type": "string", "description": "Supports wildcard '*'" },
+        "effect": { "type": "string", "enum": ["allow", "confirm", "block"] },
+        "reason": { "type": "string" }
+      }
+    }
+  }
+}

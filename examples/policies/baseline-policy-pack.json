@@ -1,0 +1,21 @@
+{
+  "globalPolicies": [
+    {
+      "id": "confirm-deploy",
+      "tool": "deploy",
+      "actor": "*",
+      "scope": "*",
+      "effect": "confirm",
+      "reason": "Deploy requires explicit approval."
+    }
+  ],
+  "projectPolicies": [
+    {
+      "id": "block-power-actions",
+      "tool": "manage_power",
+      "effect": "block",
+      "reason": "Power control is blocked by default."
+    }
+  ],
+  "userPolicies": []
+}

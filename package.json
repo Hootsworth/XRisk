@@ -1,0 +1,28 @@
+{
+  "name": "xrisk-engine",
+  "version": "0.1.0",
+  "description": "Autonomous and agentic safety engine for LLM and AGI workflows.",
+  "type": "module",
+  "main": "src/index.js",
+  "bin": {
+    "xrisk": "./bin/xrisk.js"
+  },
+  "exports": {
+    ".": "./src/index.js",
+    "./compat": "./src/compat/index.js"
+  },
+  "scripts": {
+    "test": "npm run test:core && npm run test:security",
+    "test:core": "node tests/xrisk_engine_test.js",
+    "test:security": "node tests/security_regression_test.js",
+    "test:matrix": "node tests/scenario_matrix_test.js"
+  },
+  "keywords": [
+    "ai-safety",
+    "agentic",
+    "risk-engine",
+    "privacy",
+    "security"
+  ],
+  "license": "Apache-2.0"
+}

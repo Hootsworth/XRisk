@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://xrisk-engine.dev/schemas/assess-result.schema.json",
+  "title": "XRisk Assess Result",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["decision", "reasons", "policy", "risk"],
+  "properties": {
+    "decision": { "type": "string", "enum": ["allow", "confirm", "block"] },
+    "reasons": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "decision": { "type": "string", "enum": ["allow", "confirm", "block"] },
+        "reason": { "type": "string" }
+      },
+      "required": ["decision"]
+    },
+    "risk": {
+      "type": "object",
+      "required": ["score", "decision"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "decision": { "type": "string", "enum": ["allow", "confirm", "block", "trip-circuit"] }
+      }
+    },
+    "incident": {
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string" },
+        "severity": { "type": "string" },
+        "incidentType": { "type": "string" }
+      }
+    }
+  }
+}

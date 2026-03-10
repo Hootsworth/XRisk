@@ -1,0 +1,124 @@
+openapi: 3.1.0
+info:
+  title: XRisk Engine API
+  version: 0.1.0
+  description: API contract for embedding XRisk Engine decision endpoints.
+servers:
+  - url: http://localhost:8787
+paths:
+  /assess:
+    post:
+      summary: Assess a proposed agent action
+      operationId: assessAction
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssessRequest'
+      responses:
+        '200':
+          description: Assessment decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssessResponse'
+  /verify-model:
+    post:
+      summary: Verify model output consistency and evidence requirements
+      operationId: verifyModelOutput
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyModelRequest'
+      responses:
+        '200':
+          description: Verification decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VerifyModelResponse'
+components:
+  schemas:
+    AssessRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: object
+          required: [tool]
+          properties:
+            tool:
+              type: string
+            args:
+              type: object
+            actor:
+              type: string
+            actorRole:
+              type: string
+              enum: [planner, executor, reviewer]
+        payload:
+          type: object
+        prompt:
+          type: string
+        egressUrl:
+          type: string
+          format: uri
+        intentRisk:
+          type: number
+          minimum: 0
+          maximum: 1
+        actionRisk:
+          type: number
+          minimum: 0
+          maximum: 1
+        environmentRisk:
+          type: number
+          minimum: 0
+          maximum: 1
+    AssessResponse:
+      type: object
+      required: [decision, reasons]
+      properties:
+        decision:
+          type: string
+          enum: [allow, confirm, block]
+        reasons:
+          type: array
+          items:
+            type: string
+        risk:
+          type: object
+          properties:
+            score:
+              type: number
+            decision:
+              type: string
+    VerifyModelRequest:
+      type: object
+      properties:
+        primary:
+          type: object
+        secondary:
+          type: array
+          items:
+            type: object
+        requireEvidence:
+          type: boolean
+    VerifyModelResponse:
+      type: object
+      required: [decision, consistency, hasEvidence]
+      properties:
+        decision:
+          type: string
+          enum: [allow, confirm]
+        consistency:
+          type: number
+          minimum: 0
+          maximum: 1
+        hasEvidence:
+          type: boolean
+        reason:
+          type: string

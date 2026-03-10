@@ -1,0 +1,13 @@
+{
+  "primary": {
+    "answer": "Deploy blocked due to egress policy.",
+    "evidence": ["policy-rule-42"]
+  },
+  "secondary": [
+    {
+      "answer": "Deploy blocked due to egress policy.",
+      "evidence": ["policy-rule-42"]
+    }
+  ],
+  "requireEvidence": true
+}

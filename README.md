@@ -186,6 +186,7 @@ Layer precedence is evaluated as global, then project, then user, with most rest
 OpenAPI contract is available at:
 
 - `docs/openapi.yaml`
+- `docs/developer-adoption-guide.md`
 
 Response schema for decisions:
 

@@ -36,6 +36,9 @@ XRisk provides composable guardrails to address these issues in one place.
 - Approval workflow integration for `confirm` actions
 - Model output verification (consistency and evidence checks)
 - Recovery and incident summary generation
+- Policy pack verification (conflicts, shadowed rules, critical allow overrides)
+- Supply-chain integrity enforcement (signature and provenance gates)
+- Deterministic forensics hashes and replay validation
 
 ## Project Structure
 
@@ -126,6 +129,20 @@ Validate model output consistency and evidence requirements:
 node bin/xrisk.js verify-model --input-file examples/verify-model-input.json --profile enterprise
 ```
 
+### `validate-policies`
+
+Validate policy packs before rollout or CI promotion:
+
+```bash
+node bin/xrisk.js validate-policies --policies-file examples/policies/baseline-policy-pack.json
+```
+
+Optional strict critical-tool set:
+
+```bash
+node bin/xrisk.js validate-policies --policies-file examples/policies/baseline-policy-pack.json --critical-tools run_shell,deploy,manage_power
+```
+
 ## Programmatic Usage
 
 ```js
@@ -138,7 +155,8 @@ const xrisk = createNodeXRisk({
 		userPolicies: []
 	},
 	egress: { allowedDomains: ['api.example.com'], deniedDomains: ['evil.example'] },
-	telemetry: { enabled: true, localOnly: true }
+	telemetry: { enabled: true, localOnly: true },
+	supplyChain: { requireSignatures: true, minimumProvenance: 'slsa2' }
 });
 
 const decision = xrisk.assess({
@@ -146,11 +164,33 @@ const decision = xrisk.assess({
 	payload: { releaseId: '2026.03.10' },
 	prompt: 'deploy release candidate',
 	egressUrl: 'https://api.example.com/releases',
-	approvalContext: { reason: 'release requested' }
+	approvalContext: { reason: 'release requested' },
+	supplyChain: {
+		dependencies: { release_bundle: '1.4.0' },
+		artifacts: {
+			signatures: { release_bundle: true },
+			provenance: { release_bundle: 'slsa3' }
+		}
+	}
 });
 
 console.log(decision.decision);
 console.log(decision.reasons);
+console.log(decision.forensics);
+
+const verifyPolicies = xrisk.validatePolicies({
+	globalPolicies: [{ id: 'confirm-deploy', tool: 'deploy', effect: 'confirm' }],
+	projectPolicies: [],
+	userPolicies: []
+});
+console.log(verifyPolicies.valid);
+
+const entries = xrisk.getAuditEntries();
+const latestAssess = [...entries].reverse().find((entry) => entry.event?.type === 'assess_action');
+if (latestAssess) {
+	const replay = xrisk.replayDecision(latestAssess.hash);
+	console.log(replay.replay);
+}
 ```
 
 ## How Decisions Are Made
@@ -166,6 +206,12 @@ At a high level, XRisk combines deterministic policy checks with risk signals:
 7. Risk score aggregation
 8. Circuit breaker update
 9. Audit logging and telemetry
+
+Phase 1 additions:
+
+10. Policy pack verification before enforcement
+11. Supply-chain signature/provenance checks
+12. Deterministic replay using forensic decision hashes
 
 The output is explainable and includes rationale fields (`reasons`, policy match details, risk breakdown, and incident summary when blocked).
 
@@ -222,6 +268,13 @@ CI workflow:
 
 - `.github/workflows/ci.yml`
 
+Suggested security gate commands:
+
+```bash
+npm test
+node bin/xrisk.js validate-policies --policies-file examples/policies/baseline-policy-pack.json
+```
+
 ## Security Notes
 
 - Prefer explicit policy packs for production usage.
@@ -253,6 +306,6 @@ Suggested workflow:
 
 ## Roadmap
 
-- HTTP server implementation for `docs/openapi.yaml`
-- Additional language adapters
-- Expanded threat-model and benchmark suite
+- Phase 1 completed: policy verification, supply-chain integrity enforcement, deterministic replay
+- Phase 2 planned: real-time threat intelligence, zero-trust workload identity, autonomous containment
+- Phase 3 planned: adversarial simulation harness, multi-party cryptographic approvals, lineage/purpose controls

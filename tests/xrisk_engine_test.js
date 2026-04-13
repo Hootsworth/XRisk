@@ -44,6 +44,36 @@ const modelCheck = xrisk.verifyModelResponse({
 
 assert.equal(modelCheck.decision, 'allow');
 
+const policyValidation = xrisk.validatePolicies({
+    globalPolicies: [{ id: 'allow-shell', tool: 'run_shell', effect: 'allow' }],
+    projectPolicies: [],
+    userPolicies: []
+});
+assert.equal(policyValidation.valid, false);
+assert.ok(policyValidation.violations.some((v) => v.code === 'critical_allow_override'));
+
+const supplyChainBlock = xrisk.assess({
+    action: { tool: 'build', actor: 'ci', actorRole: 'executor' },
+    payload: {},
+    supplyChain: {
+        dependencies: { lodash: '4.17.21' },
+        artifacts: {
+            signatures: { lodash: false },
+            provenance: { lodash: 'slsa1' }
+        }
+    }
+});
+assert.equal(supplyChainBlock.decision, 'block');
+assert.ok(supplyChainBlock.reasons.some((r) => r.toLowerCase().includes('supply-chain')));
+
+const auditEntries = xrisk.getAuditEntries();
+const latestAssess = [...auditEntries].reverse().find((entry) => entry.event?.type === 'assess_action');
+assert.ok(latestAssess);
+
+const replay = xrisk.replayDecision(latestAssess.hash);
+assert.equal(replay.ok, true);
+assert.equal(replay.replay.match, true);
+
 const audit = xrisk.getAuditStatus();
 assert.equal(audit.valid, true);
 

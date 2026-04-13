@@ -10,6 +10,7 @@ function printUsage() {
 Usage:
   xrisk assess [--action-file <path>] [--payload-file <path>] [--prompt <text>] [--egress-url <url>] [--profile <name>] [--policies-file <path>] [--compact]
   xrisk verify-model --input-file <path> [--profile <name>] [--policies-file <path>] [--compact]
+    xrisk validate-policies --policies-file <path> [--critical-tools <csv>] [--compact]
 
 Notes:
   - If --action-file is omitted for 'assess', JSON is read from stdin.
@@ -108,6 +109,20 @@ function run() {
         const result = xrisk.verifyModelResponse(input);
         printJson(result, compact);
         process.exit(result.decision === 'allow' ? 0 : 2);
+    }
+
+    if (command === 'validate-policies') {
+        if (!args['policies-file']) {
+            throw new Error('validate-policies requires --policies-file <path>.');
+        }
+
+        const policyPack = readJsonFile(args['policies-file']);
+        const criticalTools = args['critical-tools']
+            ? String(args['critical-tools']).split(',').map((v) => v.trim()).filter(Boolean)
+            : undefined;
+        const result = xrisk.validatePolicies(policyPack, { criticalTools });
+        printJson(result, compact);
+        process.exit(result.valid ? 0 : 2);
     }
 
     throw new Error(`Unknown command: ${command}`);

@@ -3,7 +3,8 @@ const DEFAULT_WEIGHTS = {
     action: 0.25,
     dataSensitivity: 0.2,
     environment: 0.15,
-    anomaly: 0.2
+    anomaly: 0.2,
+    supplyChain: 0
 };
 
 function normalize(value) {
@@ -17,7 +18,8 @@ export function scoreRisk(signals = {}, config = {}) {
         action: normalize(signals.action),
         dataSensitivity: normalize(signals.dataSensitivity),
         environment: normalize(signals.environment),
-        anomaly: normalize(signals.anomaly)
+        anomaly: normalize(signals.anomaly),
+        supplyChain: normalize(signals.supplyChain)
     };
 
     const total =
@@ -25,7 +27,8 @@ export function scoreRisk(signals = {}, config = {}) {
         parts.action * weights.action +
         parts.dataSensitivity * weights.dataSensitivity +
         parts.environment * weights.environment +
-        parts.anomaly * weights.anomaly;
+        parts.anomaly * weights.anomaly +
+        parts.supplyChain * weights.supplyChain;
 
     const score = Math.max(0, Math.min(1, total));
     const thresholds = config.thresholds || {

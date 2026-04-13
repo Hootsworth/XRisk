@@ -34,6 +34,22 @@
         "severity": { "type": "string" },
         "incidentType": { "type": "string" }
       }
+    },
+    "supplyChain": {
+      "type": "object",
+      "properties": {
+        "decision": { "type": "string", "enum": ["allow", "confirm", "block"] },
+        "findings": { "type": "array" }
+      }
+    },
+    "forensics": {
+      "type": "object",
+      "properties": {
+        "inputHash": { "type": "string" },
+        "policyHash": { "type": "string" },
+        "decisionHash": { "type": "string" },
+        "modelVerificationHash": { "type": ["string", "null"] }
+      }
     }
   }
 }

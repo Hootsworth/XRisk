@@ -1,3 +1,20 @@
+import crypto from 'crypto';
+
+function stableSerialize(value) {
+    if (Array.isArray(value)) {
+        return `[${value.map((item) => stableSerialize(item)).join(',')}]`;
+    }
+    if (value && typeof value === 'object') {
+        const keys = Object.keys(value).sort();
+        return `{${keys.map((k) => `${JSON.stringify(k)}:${stableSerialize(value[k])}`).join(',')}}`;
+    }
+    return JSON.stringify(value);
+}
+
+export function hashDecisionSnapshot(snapshot = {}) {
+    return crypto.createHash('sha256').update(stableSerialize(snapshot)).digest('hex');
+}
+
 export function buildRecoveryPlan({ incidentType, action }) {
     if (incidentType === 'loop') {
         return [
@@ -32,5 +49,14 @@ export function createIncidentSummary(context = {}) {
         action: context.action || null,
         decision: context.decision || null,
         nextSteps: buildRecoveryPlan(context)
+    };
+}
+
+export function buildReplayResult({ expected, actual, hashMatch }) {
+    return {
+        match: Boolean(hashMatch && expected === actual),
+        expected,
+        actual,
+        hashMatch: Boolean(hashMatch)
     };
 }

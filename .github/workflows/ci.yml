@@ -15,10 +15,6 @@ jobs:
       matrix:
         node-version: [20.x, 22.x]
 
-    defaults:
-      run:
-        working-directory: xrisk-engine
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -28,7 +24,7 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-          cache-dependency-path: xrisk-engine/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install
         run: npm install
